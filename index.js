@@ -11,11 +11,22 @@ app.use(cors());
 app.use(express.json());
 
 const uri = process.env.MONGO_URI;
-mongoose.connect(uri);
+mongoose.connect(uri, {
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+  bufferCommands: false, // Disable mongoose buffering
+  bufferMaxEntries: 0, // Disable mongoose buffering
+}).catch(err => {
+  console.error('MongoDB connection error:', err);
+});
+
 const connection = mongoose.connection;
 connection.once('open', () => {
   console.log("MongoDB database connection established successfully");
-})
+});
+connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
 
 // Seed an admin user if it doesn't exist
 const User = require('./models/User');
