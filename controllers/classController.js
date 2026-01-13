@@ -34,9 +34,17 @@ const createClass = async (req, res) => {
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
 
-    // Automatically determine the day of the week from the start date
+    // Determine the day of the week. Prefer client-provided `req.body.day`
+    // to avoid timezone-induced shifts; fall back to computing from startDate.
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const day = days[startDate.getDay()];
+    let day = req.body.day;
+    if (!day || !days.includes(day)) {
+      day = days[startDate.getDay()];
+    }
+
+    // Debug logging: incoming values and computed values
+    console.log('createClass: incoming day:', req.body.day, 'computed day:', day);
+    console.log('createClass: startTime ISO:', startDate.toISOString(), 'endTime ISO:', endDate.toISOString());
 
     // Check for overlapping classes on the same day
     const overlappingClass = await ClassSession.findOne({
@@ -48,7 +56,15 @@ const createClass = async (req, res) => {
 
     if (overlappingClass) {
       return res.status(400).json({ 
-        message: `Class time overlaps with an existing class: "${overlappingClass.title}"`
+        message: `Class time overlaps with an existing class: "${overlappingClass.title}"`,
+        overlap: {
+          _id: overlappingClass._id,
+          title: overlappingClass.title,
+          startTime: overlappingClass.startTime,
+          endTime: overlappingClass.endTime,
+          location: overlappingClass.location,
+          day: overlappingClass.day,
+        }
       });
     }
 
@@ -95,9 +111,17 @@ const updateClass = async (req, res) => {
       const startDate = new Date(startTime);
       const endDate = new Date(endTime);
 
-      // determine day from start date before running overlap check
+      // Determine the day to use. Prefer client-provided `req.body.day` when valid,
+      // otherwise compute from startDate to avoid timezone/day mismatches.
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const day = days[startDate.getDay()];
+      let day = req.body.day;
+      if (!day || !days.includes(day)) {
+        day = days[startDate.getDay()];
+      }
+
+      // Debug logging: incoming values and computed values for update
+      console.log('updateClass: incoming day:', req.body.day, 'computed day:', day);
+      console.log('updateClass: startTime ISO:', startDate.toISOString(), 'endTime ISO:', endDate.toISOString());
 
       // map incoming type/category like in create
       const categoryFinal = category || (['EXTERNAL', 'PERSONAL'].includes(incomingType) ? incomingType : 'EXTERNAL');
@@ -113,7 +137,17 @@ const updateClass = async (req, res) => {
       });
 
       if (overlappingClass) {
-        return res.status(400).json({ message: `Class time overlaps with an existing class: "${overlappingClass.title}"` });
+        return res.status(400).json({ 
+          message: `Class time overlaps with an existing class: "${overlappingClass.title}"`,
+          overlap: {
+            _id: overlappingClass._id,
+            title: overlappingClass.title,
+            startTime: overlappingClass.startTime,
+            endTime: overlappingClass.endTime,
+            location: overlappingClass.location,
+            day: overlappingClass.day,
+          }
+        });
       }
 
       const parsedClassNumber = classNumber !== undefined ? Number(classNumber) : (title && (title.match(/\d+/) || [])[0] ? Number((title.match(/\d+/) || [])[0]) : undefined);
@@ -141,6 +175,20 @@ const updateClass = async (req, res) => {
     }
 };
 
+// @desc    Get a single class session
+// @route   GET /api/classes/:id
+// @access  Public
+const getClassById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cls = await ClassSession.findById(id);
+    if (!cls) return res.status(404).json({ message: 'Class not found' });
+    res.json(cls);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
 // @desc    Delete a class session
 // @route   DELETE /api/classes/:id
 // @access  Private
@@ -159,5 +207,6 @@ module.exports = {
   getClasses,
   createClass,
   updateClass,
+  getClassById,
   deleteClass,
 };
