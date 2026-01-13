@@ -95,6 +95,10 @@ const updateClass = async (req, res) => {
       const startDate = new Date(startTime);
       const endDate = new Date(endTime);
 
+      // determine day from start date before running overlap check
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const day = days[startDate.getDay()];
+
       // map incoming type/category like in create
       const categoryFinal = category || (['EXTERNAL', 'PERSONAL'].includes(incomingType) ? incomingType : 'EXTERNAL');
       const typeFinal = ['Theory', 'Revision', 'Paper Class'].includes(incomingType) ? incomingType : 'Theory';
@@ -111,9 +115,6 @@ const updateClass = async (req, res) => {
       if (overlappingClass) {
         return res.status(400).json({ message: `Class time overlaps with an existing class: "${overlappingClass.title}"` });
       }
-
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const day = days[startDate.getDay()];
 
       const parsedClassNumber = classNumber !== undefined ? Number(classNumber) : (title && (title.match(/\d+/) || [])[0] ? Number((title.match(/\d+/) || [])[0]) : undefined);
 
