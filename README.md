@@ -1,99 +1,137 @@
-# Timetable App Backend
+# Timetable App — Backend
 
-A Node.js/Express backend for the Timetable Management System.
+This is the Express.js API server for the Timetable Management System. It provides endpoints for authentication and timetable management and stores data in MongoDB.
 
-## Features
+## Quick Overview
 
-- RESTful API for managing class sessions
-- User authentication with JWT
-- MongoDB database integration
-- Admin panel for managing timetables
-- Support for different class types (Theory, Revision, Paper Class)
-- Medium support (Tamil/English)
+- RESTful API for class sessions (create, read, update, delete)
+- Admin authentication using JWT
+- Class metadata includes: title, day, start/end times, location, category (PERSONAL/EXTERNAL), type (Theory/Revision/Paper Class), medium (Tamil/English), classNumber, teacher
 
 ## Tech Stack
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB with Mongoose
-- **Authentication**: JWT (JSON Web Tokens)
-- **Password Hashing**: bcryptjs
+- Node.js (LTS)
+- Express.js
+- MongoDB with Mongoose
+- JWT for auth, bcryptjs for password hashing
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- Node.js 18+ (or current LTS)
+- MongoDB (local or cloud)
+- npm (or yarn)
 
-- Node.js (v14 or higher)
-- MongoDB database
-- npm or yarn
+## Installation & Run
 
-### Installation
+1. Install dependencies
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Create a `.env` file in the backend directory with the following variables:
-   ```
-   PORT=5000
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret_key
-   ```
-
-4. Start the development server:
-   ```bash
-   npm start
-   ```
-
-The server will start on `http://localhost:5000` (or the port specified in your `.env`).
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - Admin login
-- `POST /api/auth/register` - Admin registration (development only)
-
-### Timetable Management
-- `GET /api/timetable` - Get all classes (with optional filters)
-- `POST /api/timetable` - Create a new class session (admin only)
-- `PUT /api/timetable/:id` - Update a class session (admin only)
-- `DELETE /api/timetable/:id` - Delete a class session (admin only)
-
-## Project Structure
-
-```
-backend/
-├── controllers/     # Route handlers
-├── middleware/      # Authentication middleware
-├── models/         # MongoDB schemas
-├── routes/         # API routes
-├── index.js        # Server entry point
-├── package.json    # Dependencies
-└── .env           # Environment variables
+```bash
+cd backend
+npm install
 ```
 
-## Environment Variables
+2. Configure environment variables (create `.env` in `backend/`):
 
-- `PORT`: Server port (default: 5000)
-- `MONGO_URI`: MongoDB connection string
-- `JWT_SECRET`: Secret key for JWT token generation
+```
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/timetable
+JWT_SECRET=your_jwt_secret_here
+```
 
-## Development
+3. Start server (development):
 
-To run in development mode with auto-restart:
 ```bash
 npm run dev
 ```
 
-## Scripts
+Start server (production):
 
-- `npm start` - Start production server
-- `npm run dev` - Start development server with nodemon
-- `npm test` - Run tests (if implemented)</content>
+```bash
+npm start
+```
+
+By default the server listens on `http://localhost:5000`.
+
+## API Reference (examples)
+
+Base path: `/api` (e.g. `http://localhost:5000/api`)
+
+### Authentication
+
+- POST `/api/auth/login` — login admin
+
+Example (curl):
+
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+   -H "Content-Type: application/json" \
+   -d '{"username":"admin","password":"password"}'
+```
+
+Success returns `{ token: "<jwt>" }`.
+
+### Timetable endpoints
+
+- GET `/api/timetable` — list classes. Supports query params: `day`, `category` (PERSONAL/EXTERNAL)
+- GET `/api/timetable/:id` — get single class
+- POST `/api/timetable` — create (requires Authorization header `Bearer <token>`)
+- PUT `/api/timetable/:id` — update (requires auth)
+- DELETE `/api/timetable/:id` — delete (requires auth)
+
+Example: create a class (admin)
+
+```bash
+curl -X POST http://localhost:5000/api/timetable \
+   -H "Content-Type: application/json" \
+   -H "Authorization: Bearer <JWT_TOKEN>" \
+   -d '{
+      "title":"Science - Grade 10",
+      "startTime":"2026-01-20T15:00:00.000Z",
+      "endTime":"2026-01-20T16:00:00.000Z",
+      "day":"Tuesday",
+      "location":"Excellent Institute",
+      "category":"EXTERNAL",
+      "type":"Theory",
+      "medium":"English",
+      "classNumber":10
+   }'
+```
+
+If a time overlap is detected the API returns HTTP 400 and an `overlap` object describing the conflicting session.
+
+## Models (summary)
+
+- `ClassSession` (Mongoose schema)
+   - title: String
+   - startTime: Date
+   - endTime: Date
+   - day: String
+   - location: String
+   - category: 'PERSONAL' | 'EXTERNAL'
+   - type: 'Theory' | 'Revision' | 'Paper Class'
+   - medium: 'Tamil' | 'English'
+   - classNumber: Number
+
+## Seed admin user
+
+If you have `seedAdmin.js` in the project, run it to create a default admin user (useful for development).
+
+```bash
+node seedAdmin.js
+```
+
+## Development notes & troubleshooting
+
+- If the server fails to start, check `MONGO_URI` and make sure MongoDB is reachable.
+- Check logs printed to the console — there are helpful debug messages in the controllers.
+- If JWT auth problems occur, ensure `JWT_SECRET` matches between environments.
+
+## Scripts (package.json)
+
+- `npm run dev` — start with nodemon (development)
+- `npm start` — start production server
+
+## License
+
+This project is for educational purposes. Modify or add a license as needed.
 <parameter name="filePath">c:\Users\LENOVO\Desktop\timetable-app\backend\README.md
