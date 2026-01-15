@@ -87,6 +87,7 @@ const createClass = async (req, res) => {
       type: typeFinal,
       medium: medium || 'English',
       teacher: teacher || 'Sir',
+      notificationSent: false,
       classNumber: parsedClassNumber,
     };
 
@@ -165,6 +166,8 @@ const updateClass = async (req, res) => {
           type: typeFinal,
           medium: medium || 'English',
           teacher: teacher || 'Sir',
+          // reset notification flag when a class is updated to allow re-notification
+          notificationSent: false,
           classNumber: parsedClassNumber,
         },
         { new: true }

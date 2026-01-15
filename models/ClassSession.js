@@ -26,6 +26,10 @@ const classSessionSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  notificationSent: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model('ClassSession', classSessionSchema);

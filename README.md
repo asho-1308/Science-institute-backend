@@ -126,6 +126,23 @@ node seedAdmin.js
 - Check logs printed to the console — there are helpful debug messages in the controllers.
 - If JWT auth problems occur, ensure `JWT_SECRET` matches between environments.
 
+### WhatsApp scheduler
+
+- This project includes an optional WhatsApp scheduler using `whatsapp-web.js` to send reminders about upcoming classes approximately 30 minutes before start.
+- To enable it, set `SCHEDULER_ENABLED=true` (default) and configure `ADMIN_PHONE` in your `.env` with the admin's phone number in E.164 format (e.g. `+919812345678`).
+- On first run the scheduler will print a QR code in the console — scan it with the WhatsApp account that will send messages. The session is stored locally using `whatsapp-web.js`'s `LocalAuth`.
+
+Example `.env` additions:
+
+```
+ADMIN_PHONE=+919812345678
+SCHEDULER_ENABLED=true
+```
+
+Notes:
+- This approach uses your WhatsApp account via web automation. It is free per-message but not an official business integration — use only for small-scale testing or internal reminders.
+- For production-grade WhatsApp messaging, consider Twilio WhatsApp or an approved WhatsApp Business API provider.
+
 ## Scripts (package.json)
 
 - `npm run dev` — start with nodemon (development)
