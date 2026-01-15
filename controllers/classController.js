@@ -23,7 +23,7 @@ const createClass = async (req, res) => {
   // Destructure all relevant fields from the request body
   // Note: frontend sends `type` as 'EXTERNAL' or 'PERSONAL' (which is actually the category).
   // Map accordingly so Mongoose schema enums match.
-  const { title, startTime, endTime, location, category, type: incomingType, teacher, classNumber } = req.body;
+  const { title, startTime, endTime, location, category, type: incomingType, medium, teacher, classNumber } = req.body;
 
   // Basic validation
   if (!title || !startTime || !endTime || !location) {
@@ -85,6 +85,7 @@ const createClass = async (req, res) => {
       day,
       category: categoryFinal,
       type: typeFinal,
+      medium: medium || 'English',
       teacher: teacher || 'Sir',
       classNumber: parsedClassNumber,
     };
@@ -101,7 +102,7 @@ const createClass = async (req, res) => {
 // @access  Private
 const updateClass = async (req, res) => {
     const { id } = req.params;
-    const { title, startTime, endTime, location, category, type: incomingType, teacher, classNumber } = req.body;
+    const { title, startTime, endTime, location, category, type: incomingType, medium, teacher, classNumber } = req.body;
 
     if (!title || !startTime || !endTime || !location) {
       return res.status(400).json({ message: 'Please provide title, startTime, endTime, and location.' });
@@ -162,6 +163,7 @@ const updateClass = async (req, res) => {
           day,
           category: categoryFinal,
           type: typeFinal,
+          medium: medium || 'English',
           teacher: teacher || 'Sir',
           classNumber: parsedClassNumber,
         },

@@ -12,6 +12,11 @@ const classSessionSchema = new mongoose.Schema({
     enum: ['Theory', 'Revision', 'Paper Class'],
     default: 'Theory',
   },
+  medium: {
+    type: String,
+    enum: ['Tamil', 'English'],
+    default: 'English',
+  },
   category: {
     type: String,
     enum: ['PERSONAL', 'EXTERNAL'],
