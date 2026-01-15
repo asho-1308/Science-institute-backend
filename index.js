@@ -40,6 +40,13 @@ async function startServer() {
     app.use('/timetable', classRoutes);
     app.use('/api/auth', authRoutes);
 
+    // Initialize optional WhatsApp scheduler (uses whatsapp-web.js)
+    try {
+      require('./whatsappScheduler');
+    } catch (e) {
+      console.warn('WhatsApp scheduler not started:', e && e.message);
+    }
+
     app.listen(port, () => {
       console.log(`Server is running on port: ${port}`);
     });
