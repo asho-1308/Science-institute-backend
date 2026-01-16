@@ -36,9 +36,11 @@ async function startServer() {
 
     const classRoutes = require('./routes/classRoutes');
     const authRoutes = require('./routes/authRoutes');
+    const noticeRoutes = require('./routes/noticeRoutes');
 
     app.use('/timetable', classRoutes);
     app.use('/api/auth', authRoutes);
+    app.use('/api/notices', noticeRoutes);
 
     // Initialize optional WhatsApp scheduler (uses whatsapp-web.js)
     try {
