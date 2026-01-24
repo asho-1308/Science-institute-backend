@@ -26,19 +26,7 @@ client.on('qr', (qr) => {
 });
 
 client.on('ready', () => {
-  console.log('✅ WhatsApp client ready — scheduler starting');
-
-  // Send a test message when ready
-  const adminPhone = process.env.ADMIN_PHONE;
-  if (adminPhone) {
-    const raw = adminPhone.replace(/\D/g, '');
-    const chatId = `${raw}@c.us`;
-    const testMessage = `🤖 WhatsApp Bot Connected!\n📅 Timetable App Scheduler Active\n⏰ Monitoring for class reminders\n📱 Admin: ${adminPhone}`;
-
-    client.sendMessage(chatId, testMessage)
-      .then(() => console.log('✅ Test message sent to admin'))
-      .catch(err => console.error('❌ Failed to send test message:', err.message));
-  }
+  console.log('WhatsApp client ready — scheduler starting');
 
   // Run every minute
   cron.schedule('* * * * *', async () => {
@@ -71,13 +59,7 @@ client.on('ready', () => {
           await client.sendMessage(chatId, body);
           cls.notificationSent = true;
           await cls.save();
-          console.log('✅ WhatsApp reminder sent:', {
-            classId: cls._id,
-            subject: cls.title || cls.subject,
-            time: startLocal,
-            location: cls.location,
-            recipient: adminPhone
-          });
+          console.log('Sent WhatsApp reminder for', cls._id);
         } catch (err) {
           console.error('Failed to send reminder for', cls._id, err && err.message);
         }
