@@ -42,11 +42,11 @@ async function startServer() {
     app.use('/api/auth', authRoutes);
     app.use('/api/notices', noticeRoutes);
 
-    // Initialize optional WhatsApp scheduler (uses whatsapp-web.js)
+    // Initialize notification scheduler (console logging by default)
     try {
-      require('./whatsappScheduler');
+      require('./notificationScheduler');
     } catch (e) {
-      console.warn('WhatsApp scheduler not started:', e && e.message);
+      console.warn('Notification scheduler not started:', e && e.message);
     }
 
     app.listen(port, () => {
