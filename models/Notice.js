@@ -11,6 +11,10 @@ const noticeSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  image: {
+    type: String, // URL or path to the image
+    default: null
+  },
   date: {
     type: Date,
     default: Date.now
