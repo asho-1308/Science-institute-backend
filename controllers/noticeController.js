@@ -1,15 +1,22 @@
 const Notice = require('../models/Notice');
 const multer = require('multer');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Configure multer for image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/notices/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'notice-' + uniqueSuffix + path.extname(file.originalname));
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'timetable-app/notices',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 800, height: 600, crop: 'limit' }]
   }
 });
 
@@ -17,13 +24,6 @@ const upload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
   }
 });
 
@@ -46,7 +46,7 @@ const createNotice = async (req, res) => {
     const notice = new Notice({
       title,
       content,
-      image: req.file ? `/uploads/notices/${req.file.filename}` : null,
+      image: req.file ? req.file.path : null, // Cloudinary URL
       date: date || new Date(),
       type: type || 'announcement',
       createdBy
@@ -78,7 +78,7 @@ const updateNotice = async (req, res) => {
 
     // Update image if a new file is uploaded
     if (req.file) {
-      notice.image = `/uploads/notices/${req.file.filename}`;
+      notice.image = req.file.path; // Cloudinary URL
     }
 
     const updatedNotice = await notice.save();
