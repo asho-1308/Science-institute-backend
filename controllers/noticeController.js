@@ -1,4 +1,31 @@
 const Notice = require('../models/Notice');
+const multer = require('multer');
+const path = require('path');
+
+// Configure multer for image uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/notices/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'notice-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
 
 // Get all notices (public)
 const getNotices = async (req, res) => {
@@ -19,6 +46,7 @@ const createNotice = async (req, res) => {
     const notice = new Notice({
       title,
       content,
+      image: req.file ? `/uploads/notices/${req.file.filename}` : null,
       date: date || new Date(),
       type: type || 'announcement',
       createdBy
@@ -48,6 +76,11 @@ const updateNotice = async (req, res) => {
     notice.date = date || notice.date;
     notice.type = type || notice.type;
 
+    // Update image if a new file is uploaded
+    if (req.file) {
+      notice.image = `/uploads/notices/${req.file.filename}`;
+    }
+
     const updatedNotice = await notice.save();
     await updatedNotice.populate('createdBy', 'username');
     res.json(updatedNotice);
@@ -74,5 +107,6 @@ module.exports = {
   getNotices,
   createNotice,
   updateNotice,
-  deleteNotice
+  deleteNotice,
+  upload
 };
